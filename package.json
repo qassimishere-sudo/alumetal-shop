@@ -4,16 +4,19 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "start": "node server.js"
-},
+    "start": "node server.js"
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "cloudinary": "^2.8.0",
+    "dotenv": "^17.2.3",
     "ejs": "^3.1.10",
     "express": "^5.2.1",
     "multer": "^2.0.2",
+    "pg": "^8.16.3",
     "sqlite3": "^5.1.7"
   }
 }

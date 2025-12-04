@@ -21,10 +21,10 @@
     <div class="max-w-6xl mx-auto p-6">
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div class="lg:col-span-2 space-y-4">
-                <img id="mainImg" src="/uploads/<%= product.imagesList[0] %>" class="w-full h-[500px] object-cover rounded-xl shadow-lg">
+                <img id="mainImg" src="<%= product.imagesList[0] %>" class="w-full h-[500px] object-cover rounded-xl shadow-lg">
                 <div class="flex gap-2 overflow-x-auto pb-2">
                     <% product.imagesList.forEach(function(img) { %>
-                        <img src="/uploads/<%= img %>" 
+                        <img src="<%= img %>" 
                              class="w-24 h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all"
                              onclick="document.getElementById('mainImg').src=this.src">
                     <% }); %>
