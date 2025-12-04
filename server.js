@@ -45,7 +45,6 @@ const upload = multer({ dest: 'uploads/' });
 
 // --- الروابط (Routes) ---
 
-// الصفحة الرئيسية
 app.get('/', async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM projects ORDER BY id DESC");
@@ -56,20 +55,20 @@ app.get('/', async (req, res) => {
     }
 });
 
-// صفحة التفاصيل
 app.get('/product/:id', async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM projects WHERE id = $1", [req.params.id]);
         if (result.rows.length === 0) return res.redirect('/');
         const row = result.rows[0];
-        row.imagesList = JSON.parse(row.images); 
+        // إصلاح مشكلة الحروف الكبيرة في قاعدة البيانات
+        const imagesStr = row.images || '[]';
+        row.imagesList = JSON.parse(imagesStr);
         res.render('details', { product: row });
     } catch (err) {
         res.redirect('/');
     }
 });
 
-// لوحة التحكم (تعرض قائمة المشاريع الآن)
 app.get('/admin-panel', async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM projects ORDER BY id DESC");
@@ -79,8 +78,8 @@ app.get('/admin-panel', async (req, res) => {
     }
 });
 
-// إضافة مشروع
-app.post('/add-project', upload.array('photos', 10), async (req, res) => {
+// إضافة مشروع (يدعم صور متعددة)
+app.post('/add-project', upload.array('photos', 20), async (req, res) => {
     const { title, description, category } = req.body;
     const files = req.files;
 
@@ -92,11 +91,12 @@ app.post('/add-project', upload.array('photos', 10), async (req, res) => {
         files.forEach(file => fs.unlinkSync(file.path));
 
         const imageUrls = uploadResults.map(result => result.secure_url);
-        const mainImage = imageUrls[0];
+        // تأكدنا إن الاسم mainImage بحروف صغيرة عشان قاعدة البيانات
+        const mainimage = imageUrls[0];
         const imagesJSON = JSON.stringify(imageUrls);
 
         await db.query(`INSERT INTO projects (title, category, description, images, mainImage) VALUES ($1, $2, $3, $4, $5)`, 
-            [title, category, description, imagesJSON, mainImage]);
+            [title, category, description, imagesJSON, mainimage]);
 
         res.redirect('/admin-panel');
     } catch (err) {
@@ -104,7 +104,6 @@ app.post('/add-project', upload.array('photos', 10), async (req, res) => {
     }
 });
 
-// حذف مشروع
 app.post('/delete-project/:id', async (req, res) => {
     try {
         await db.query("DELETE FROM projects WHERE id = $1", [req.params.id]);
@@ -114,57 +113,69 @@ app.post('/delete-project/:id', async (req, res) => {
     }
 });
 
-// صفحة تعديل مشروع (GET)
 app.get('/edit-project/:id', async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM projects WHERE id = $1", [req.params.id]);
         if (result.rows.length === 0) return res.redirect('/admin-panel');
-        res.render('edit', { project: result.rows[0] });
+        // تأكد من تمرير mainimage بحروف صغيرة
+        const proj = result.rows[0];
+        // تصحيح الاسم للعرض
+        if(proj.mainImage) proj.mainimage = proj.mainImage; 
+        
+        res.render('edit', { project: proj });
     } catch (err) {
         res.redirect('/admin-panel');
     }
 });
 
-// حفظ التعديل (POST) - يدعم تعديل الصور الآن
-app.post('/update-project/:id', upload.array('photos', 10), async (req, res) => {
-    const { title, description, category } = req.body;
+// تحديث المشروع (المنطق الجديد للحذف والإضافة)
+app.post('/update-project/:id', upload.array('photos', 20), async (req, res) => {
+    const { title, description, category, deleteImages } = req.body;
     const files = req.files;
     const id = req.params.id;
 
     try {
-        // الحالة الأولى: المستخدم رفع صور جديدة (عايز يغير الصور)
-        if (files && files.length > 0) {
-            
-            // 1. رفع الصور الجديدة
-            const uploadPromises = files.map(file => cloudinary.uploader.upload(file.path, { folder: "alumetal_projects" }));
-            const uploadResults = await Promise.all(uploadPromises);
-            
-            // 2. مسح الملفات المؤقتة
-            files.forEach(file => fs.unlinkSync(file.path));
+        // 1. نجيب المشروع الحالي عشان نعرف الصور اللي فيه
+        const currentProjectRes = await db.query("SELECT * FROM projects WHERE id = $1", [id]);
+        const currentProject = currentProjectRes.rows[0];
+        let currentImages = JSON.parse(currentProject.images || '[]');
 
-            // 3. تجهيز الروابط
-            const imageUrls = uploadResults.map(result => result.secure_url);
-            const mainImage = imageUrls[0];
-            const imagesJSON = JSON.stringify(imageUrls);
-
-            // 4. تحديث الكل في قاعدة البيانات
-            await db.query(
-                "UPDATE projects SET title = $1, description = $2, category = $3, images = $4, mainImage = $5 WHERE id = $6", 
-                [title, description, category, imagesJSON, mainImage, id]
-            );
-
-        } else {
-            // الحالة الثانية: المستخدم مرفعش صور (عايز يحدث الكلام بس)
-            await db.query(
-                "UPDATE projects SET title = $1, description = $2, category = $3 WHERE id = $4", 
-                [title, description, category, id]
-            );
+        // 2. حذف الصور المحددة (لو المستخدم اختار حذف)
+        // deleteImages ممكن يكون string (لو صورة واحدة) أو array (لو كذا صورة)
+        let imagesToDelete = [];
+        if (deleteImages) {
+            imagesToDelete = Array.isArray(deleteImages) ? deleteImages : [deleteImages];
+            // فلتر الصور: خلي بس الصور اللي مش موجودة في قائمة الحذف
+            currentImages = currentImages.filter(img => !imagesToDelete.includes(img));
         }
 
+        // 3. إضافة الصور الجديدة (لو المستخدم رفع)
+        if (files && files.length > 0) {
+            const uploadPromises = files.map(file => cloudinary.uploader.upload(file.path, { folder: "alumetal_projects" }));
+            const uploadResults = await Promise.all(uploadPromises);
+            files.forEach(file => fs.unlinkSync(file.path));
+            
+            const newImageUrls = uploadResults.map(result => result.secure_url);
+            // دمج الصور القديمة (بعد الحذف) مع الجديدة
+            currentImages = currentImages.concat(newImageUrls);
+        }
+
+        // 4. تحديد الصورة الرئيسية (أول صورة في القائمة الجديدة)
+        // لو مسح كل الصور، بنحط صورة افتراضية أو نسيبها فاضية
+        const mainimage = currentImages.length > 0 ? currentImages[0] : '';
+        const imagesJSON = JSON.stringify(currentImages);
+
+        // 5. التحديث في قاعدة البيانات
+        await db.query(
+            "UPDATE projects SET title = $1, description = $2, category = $3, images = $4, mainImage = $5 WHERE id = $6", 
+            [title, description, category, imagesJSON, mainimage, id]
+        );
+
         res.redirect('/admin-panel');
+
     } catch (err) {
         console.error(err);
-        res.send("Error updating project: " + err.message);
+        res.send("Error updating: " + err.message);
     }
 });
 

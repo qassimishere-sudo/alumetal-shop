@@ -6,6 +6,7 @@
     <title><%= product.title %></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>body { font-family: 'Cairo', sans-serif; }</style>
 </head>
 <body class="bg-gray-50 pb-10">
@@ -23,15 +24,28 @@
         <div class="flex flex-col lg:flex-row gap-8">
             
             <div class="w-full lg:w-2/3 space-y-4">
-                <div class="relative w-full h-[300px] md:h-[500px] rounded-xl overflow-hidden shadow-lg border border-gray-200">
-                    <img id="mainImg" src="<%= product.imagesList[0] %>" class="w-full h-full object-cover">
+                <div class="relative w-full h-[300px] md:h-[500px] rounded-xl overflow-hidden shadow-lg border border-gray-200 group">
+                    
+                    <img id="mainImg" src="<%= product.imagesList[0] %>" class="w-full h-full object-cover transition-opacity duration-300">
+                    
+                    <button onclick="nextImage()" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-amber-500 transition cursor-pointer z-10">
+                        <i class="fas fa-chevron-right text-xl"></i>
+                    </button>
+                    
+                    <button onclick="prevImage()" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-black/50 text-white p-3 rounded-full hover:bg-amber-500 transition cursor-pointer z-10">
+                        <i class="fas fa-chevron-left text-xl"></i>
+                    </button>
+
+                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm">
+                        <span id="currentIndex">1</span> / <%= product.imagesList.length %>
+                    </div>
                 </div>
                 
                 <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                    <% product.imagesList.forEach(function(img) { %>
+                    <% product.imagesList.forEach(function(img, index) { %>
                         <img src="<%= img %>" 
-                             class="w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all shadow-sm flex-shrink-0"
-                             onclick="document.getElementById('mainImg').src=this.src">
+                             class="thumbnail w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all shadow-sm flex-shrink-0 <%= index === 0 ? 'border-amber-500' : '' %>"
+                             onclick="setImage(<%= index %>)">
                     <% }); %>
                 </div>
             </div>
@@ -49,9 +63,53 @@
                     </a>
                 </div>
             </div>
-
         </div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+    <script>
+        // هنا كان الخطأ، وتم إصلاحه باستخدام JSON.parse
+        const images = JSON.parse('<%- JSON.stringify(product.imagesList) %>');
+        let currentIdx = 0;
+
+        function updateDisplay() {
+            const img = document.getElementById('mainImg');
+            const counter = document.getElementById('currentIndex');
+            const thumbnails = document.querySelectorAll('.thumbnail');
+
+            // تغيير الصورة
+            img.src = images[currentIdx];
+            
+            // تحديث العداد
+            counter.innerText = currentIdx + 1;
+
+            // تحديث إطار المصغرات
+            thumbnails.forEach((thumb, idx) => {
+                if(idx === currentIdx) {
+                    thumb.classList.add('border-amber-500');
+                    thumb.classList.remove('border-transparent');
+                } else {
+                    thumb.classList.remove('border-amber-500');
+                    thumb.classList.add('border-transparent');
+                }
+            });
+        }
+
+        function nextImage() {
+            currentIdx++;
+            if (currentIdx >= images.length) currentIdx = 0;
+            updateDisplay();
+        }
+
+        function prevImage() {
+            currentIdx--;
+            if (currentIdx < 0) currentIdx = images.length - 1;
+            updateDisplay();
+        }
+
+        function setImage(index) {
+            currentIdx = index;
+            updateDisplay();
+        }
+    </script>
 </body>
 </html>

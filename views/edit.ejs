@@ -6,52 +6,67 @@
     <title>تعديل المشروع</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>body { font-family: 'Cairo', sans-serif; }</style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
 
-    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-lg border-t-4 border-blue-500">
-        <h2 class="text-2xl font-bold mb-6 text-center">تعديل بيانات: <%= project.title %></h2>
+    <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-2xl border-t-4 border-blue-500">
+        <h2 class="text-2xl font-bold mb-6 text-center">تعديل: <%= project.title %></h2>
         
         <form action="/update-project/<%= project.id %>" method="POST" enctype="multipart/form-data">
             
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">عنوان العمل</label>
-                <input type="text" name="title" value="<%= project.title %>" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-gray-700 font-bold mb-2">القسم</label>
-                <select name="category" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
-                    <option value="مطبخ" <%= project.category === 'مطبخ' ? 'selected' : '' %>>مطبخ</option>
-                    <option value="شباك" <%= project.category === 'شباك' ? 'selected' : '' %>>شباك</option>
-                    <option value="باب" <%= project.category === 'باب' ? 'selected' : '' %>>باب</option>
-                </select>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">العنوان</label>
+                    <input type="text" name="title" value="<%= project.title %>" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none" required>
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">القسم</label>
+                    <select name="category" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none">
+                        <option value="مطبخ" <%= project.category === 'مطبخ' ? 'selected' : '' %>>مطبخ</option>
+                        <option value="شباك" <%= project.category === 'شباك' ? 'selected' : '' %>>شباك</option>
+                        <option value="باب" <%= project.category === 'باب' ? 'selected' : '' %>>باب</option>
+                    </select>
+                </div>
             </div>
 
             <div class="mb-4">
                 <label class="block text-gray-700 font-bold mb-2">الوصف</label>
-                <textarea name="description" rows="4" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"><%= project.description %></textarea>
+                <textarea name="description" rows="3" class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500 outline-none"><%= project.description %></textarea>
             </div>
 
-            <div class="mb-6 bg-gray-50 p-3 rounded border border-gray-200">
-                <label class="block text-gray-700 font-bold mb-2">تحديث الصور (اختياري)</label>
-                <p class="text-xs text-gray-500 mb-2">اتركها فارغة للاحتفاظ بالصور القديمة. إذا رفعت صور جديدة سيتم استبدال القديمة.</p>
+            <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <label class="block text-gray-800 font-bold mb-3 border-b pb-2">1. إدارة الصور الحالية (حدد للحذف)</label>
                 
-                <div class="flex gap-2 mb-3 overflow-x-auto pb-2">
-                    <span class="text-xs self-center ml-2 font-bold text-gray-400">الصور الحالية:</span>
-                    <img src="<%= project.mainimage %>" class="w-10 h-10 object-cover rounded border">
+                <% 
+                    // تحويل نص الصور لمصفوفة عشان نعرضهم
+                    const images = JSON.parse(project.images || '[]');
+                %>
+                
+                <div class="grid grid-cols-3 sm:grid-cols-4 gap-4 mb-4">
+                    <% images.forEach(function(img, index) { %>
+                        <div class="relative group">
+                            <img src="<%= img %>" class="w-full h-24 object-cover rounded border bg-white">
+                            <label class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity rounded">
+                                <input type="checkbox" name="deleteImages" value="<%= img %>" class="w-5 h-5 accent-red-500">
+                                <span class="text-white mr-2 text-sm font-bold">حذف</span>
+                            </label>
+                            <div class="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 rounded hidden peer-checked:block">سيحذف</div>
+                        </div>
+                    <% }); %>
                 </div>
 
-                <input type="file" name="photos" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                <label class="block text-gray-800 font-bold mb-2 border-b pb-2 mt-6">2. إضافة صور جديدة (اختياري)</label>
+                <input type="file" name="photos" multiple class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+                <p class="text-xs text-gray-500 mt-1">يمكنك اختيار أكثر من صورة في نفس الوقت.</p>
             </div>
 
             <div class="flex gap-3">
-                <button type="submit" class="flex-1 bg-blue-600 text-white font-bold py-2 rounded hover:bg-blue-700">حفظ التعديلات</button>
-                <a href="/admin-panel" class="flex-1 bg-gray-300 text-gray-700 font-bold py-2 rounded text-center hover:bg-gray-400">إلغاء</a>
+                <button type="submit" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded hover:bg-blue-700 shadow-lg">حفظ التعديلات</button>
+                <a href="/admin-panel" class="flex-1 bg-gray-300 text-gray-700 font-bold py-3 rounded text-center hover:bg-gray-400">إلغاء</a>
             </div>
         </form>
     </div>
-
 </body>
 </html>
