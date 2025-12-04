@@ -76,22 +76,6 @@ app.get('/admin-panel', async (req, res) => {
         res.send("Error");
     }
 });
-
-// --- دالة العلامة المائية (صورة اللوجو) ---
-const getWatermarkTransformation = () => {
-    return [
-        { width: 1200, crop: "scale" }, // توحيد حجم الصورة الأصلية
-        {
-            overlay: "logo_qassim",   // <--- هنا بنقوله هات الصورة اللي اسمها logo من عندك
-            width: 150,        // حجم اللوجو (صغر الرقم ده لو عايز اللوجو أصغر)
-            opacity: 60,       // شفافية اللوجو (عشان يبان اللي تحته)
-            gravity: "south_east", // المكان: تحت يمين
-            x: 20, y: 20       // الهوامش
-        },
-        { flags: "layer_apply" } // أمر الدمج
-    ];
-};
-
 // إضافة مشروع
 app.post('/add-project', upload.array('photos', 20), async (req, res) => {
     const { title, description, category } = req.body;
