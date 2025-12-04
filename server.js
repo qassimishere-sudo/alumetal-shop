@@ -82,7 +82,7 @@ const getWatermarkTransformation = () => {
     return [
         { width: 1200, crop: "scale" }, // توحيد حجم الصورة الأصلية
         {
-            overlay: "logo",   // <--- هنا بنقوله هات الصورة اللي اسمها logo من عندك
+            overlay: "logo_qassim",   // <--- هنا بنقوله هات الصورة اللي اسمها logo من عندك
             width: 150,        // حجم اللوجو (صغر الرقم ده لو عايز اللوجو أصغر)
             opacity: 60,       // شفافية اللوجو (عشان يبان اللي تحته)
             gravity: "south_east", // المكان: تحت يمين
