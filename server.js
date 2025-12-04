@@ -77,7 +77,28 @@ app.get('/admin-panel', async (req, res) => {
     }
 });
 
-// إضافة مشروع (تم تصحيح كود اللون)
+// دالة إعداد العلامة المائية (عشان نستخدمها في الإضافة والتعديل)
+const getWatermarkTransformation = () => {
+    return [
+        { width: 1000, crop: "scale" }, // 1. توحيد حجم الصورة
+        {
+            overlay: {
+                font_family: "Arial",
+                font_size: 50,
+                font_weight: "bold",
+                text: "الهندسية ميتال  01204224500"
+            },
+            color: "#F59E0B", // لون أصفر (Amber)
+            background: "#000000", // خلفية سوداء
+            opacity: 70, // شفافية الخلفية
+            gravity: "south_east", // المكان: تحت يمين
+            x: 20, y: 20
+        },
+        { flags: "layer_apply" } // <--- ده السطر السحري اللي كان ناقص (دمج الطبقات)
+    ];
+};
+
+// إضافة مشروع
 app.post('/add-project', upload.array('photos', 20), async (req, res) => {
     const { title, description, category } = req.body;
     const files = req.files;
@@ -87,22 +108,7 @@ app.post('/add-project', upload.array('photos', 20), async (req, res) => {
     try {
         const uploadPromises = files.map(file => cloudinary.uploader.upload(file.path, { 
             folder: "alumetal_projects",
-            transformation: [
-                { width: 1000, crop: "scale" }, 
-                {
-                    overlay: {
-                        font_family: "Arial",
-                        font_size: 40,
-                        font_weight: "bold",
-                        text: "الهندسية ميتال  01204224500"
-                    },
-                    color: "white",
-                    // التصحيح هنا: استخدمنا كود الهيكس المباشر للشفافية
-                    background: "#00000066", 
-                    gravity: "south_east",
-                    x: 20, y: 20
-                }
-            ]
+            transformation: getWatermarkTransformation() // استخدام دالة العلامة المائية
         }));
         
         const uploadResults = await Promise.all(uploadPromises);
@@ -117,8 +123,6 @@ app.post('/add-project', upload.array('photos', 20), async (req, res) => {
 
         res.redirect('/admin-panel');
     } catch (err) {
-        // طباعة الخطأ بوضوح عشان نعرف لو حصل حاجة تانية
-        console.error(err);
         res.send("Error: " + err.message);
     }
 });
@@ -144,7 +148,7 @@ app.get('/edit-project/:id', async (req, res) => {
     }
 });
 
-// تحديث المشروع (تم تصحيح كود اللون هنا أيضاً)
+// تحديث المشروع
 app.post('/update-project/:id', upload.array('photos', 20), async (req, res) => {
     const { title, description, category, deleteImages } = req.body;
     const files = req.files;
@@ -164,22 +168,7 @@ app.post('/update-project/:id', upload.array('photos', 20), async (req, res) => 
         if (files && files.length > 0) {
             const uploadPromises = files.map(file => cloudinary.uploader.upload(file.path, { 
                 folder: "alumetal_projects",
-                transformation: [
-                    { width: 1000, crop: "scale" },
-                    {
-                        overlay: {
-                            font_family: "Arial",
-                            font_size: 40,
-                            font_weight: "bold",
-                            text: "الهندسية ميتال  01204224500"
-                        },
-                        color: "white",
-                        // التصحيح هنا: استخدمنا كود الهيكس المباشر للشفافية
-                        background: "#00000066",
-                        gravity: "south_east",
-                        x: 20, y: 20
-                    }
-                ]
+                transformation: getWatermarkTransformation() // استخدام نفس العلامة المائية
             }));
             const uploadResults = await Promise.all(uploadPromises);
             files.forEach(file => fs.unlinkSync(file.path));
