@@ -109,7 +109,7 @@
                         <i class="fas fa-door-open text-3xl text-slate-700 group-hover:text-white transition-colors"></i>
                     </div>
                     <h3 class="text-xl font-bold mb-3 text-slate-900">شبابيك وأبواب</h3>
-                    <p class="text-gray-600 leading-relaxed">قطاعات عازلة للصوت والأتربة (PS، جامبو، تانجو, PVC) بألوان ودهانات دولية.</p>
+                    <p class="text-gray-600 leading-relaxed">قطاعات عازلة للصوت والأتربة (PS، جامبو، تكنو) بألوان ودهانات دولية.</p>
                 </div>
                 <div class="bg-white p-8 rounded-2xl shadow-xl border border-gray-100 text-center group hover:border-amber-500 transition-all duration-300 hover:-translate-y-2">
                     <div class="w-20 h-20 bg-slate-50 rounded-2xl flex items-center justify-center mx-auto mb-6 group-hover:bg-amber-500 transition-colors duration-300 transform group-hover:rotate-6">
@@ -127,14 +127,16 @@
             <div class="text-center mb-12">
                 <span class="text-amber-600 font-bold text-sm tracking-wider uppercase">معرض الصور</span>
                 <h2 class="text-3xl md:text-4xl font-extrabold text-slate-900 mt-2 mb-6">أحدث أعمالنا</h2>
+                <p class="text-gray-500 text-sm md:text-base">تصفح أحدث 3 أعمال من كل قسم، أو اختر القسم لمشاهدة جميع أعماله</p>
             </div>
 
             <div class="flex justify-center flex-wrap gap-3 mb-12">
-                <button onclick="filterProjects('all', this)" class="filter-btn active px-6 py-2.5 rounded-full font-bold bg-amber-500 text-slate-900 shadow-lg transition-all scale-105 border-2 border-amber-500">الكل</button>
+                <button onclick="filterProjects('all', this)" id="btn-all" class="filter-btn active px-6 py-2.5 rounded-full font-bold bg-amber-500 text-slate-900 shadow-lg transition-all scale-105 border-2 border-amber-500">الكل</button>
                 <button onclick="filterProjects('مطبخ', this)" class="filter-btn px-6 py-2.5 rounded-full font-bold bg-white text-slate-600 hover:bg-slate-100 transition-all border-2 border-transparent">مطابخ</button>
                 <button onclick="filterProjects('شباك', this)" class="filter-btn px-6 py-2.5 rounded-full font-bold bg-white text-slate-600 hover:bg-slate-100 transition-all border-2 border-transparent">شبابيك</button>
-                <button onclick="filterProjects('بلكونة', this)" class="filter-btn px-6 py-2.5 rounded-full font-bold bg-white text-slate-600 hover:bg-slate-100 transition-all border-2 border-transparent">بلكونات</button>
                 <button onclick="filterProjects('باب', this)" class="filter-btn px-6 py-2.5 rounded-full font-bold bg-white text-slate-600 hover:bg-slate-100 transition-all border-2 border-transparent">أبواب</button>
+                <button onclick="filterProjects('بلكونة', this)" class="filter-btn px-6 py-2.5 rounded-full font-bold bg-white text-slate-600 hover:bg-slate-100 transition-all border-2 border-transparent">بلكونات</button>
+                <button onclick="filterProjects('واجهة', this)" class="filter-btn px-6 py-2.5 rounded-full font-bold bg-white text-slate-600 hover:bg-slate-100 transition-all border-2 border-transparent">واجهات</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -142,6 +144,7 @@
                     <div class="col-span-full text-center py-20 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300">
                         <i class="fas fa-images text-6xl text-gray-200 mb-4"></i>
                         <p class="text-gray-500 font-bold text-lg">لم يتم رفع أعمال بعد..</p>
+                        <p class="text-gray-400 text-sm">ادخل لوحة التحكم لإضافة صور</p>
                     </div>
                 <% } %>
                 
@@ -215,7 +218,7 @@
                                 </div>
                                 <div>
                                     <p class="text-xs text-gray-400 mb-1">تابعنا على فيسبوك</p>
-                                    <a href="https://www.facebook.com/share/1BDJjrhUpf/?mibextid=wwXIfr" target="_blank" class="font-bold text-lg hover:text-blue-400 transition-colors">صفحة الهندسية ميتال</a>
+                                    <a href="https://www.facebook.com/" target="_blank" class="font-bold text-lg hover:text-blue-400 transition-colors">صفحة الهندسية ميتال</a>
                                 </div>
                             </div>
                         </div>
@@ -239,30 +242,65 @@
     <footer class="bg-slate-950 text-gray-500 py-8 text-center border-t border-slate-900">
         <div class="container mx-auto px-4">
             <p class="text-sm font-medium">© 2025 الهندسية ميتال - جميع الحقوق محفوظة</p>
+            <p class="text-xs mt-2 opacity-50">تصميم وتطوير بواسطة Gemini AI</p>
         </div>
     </footer>
 
     <script>
         function filterProjects(category, clickedBtn) {
+            // 1. تلوين الزراير
             const buttons = document.querySelectorAll('.filter-btn');
             buttons.forEach(btn => {
                 btn.className = "filter-btn px-6 py-2.5 rounded-full font-bold bg-white text-slate-600 hover:bg-slate-100 transition-all border-2 border-transparent";
             });
-
-            clickedBtn.className = "filter-btn active px-6 py-2.5 rounded-full font-bold bg-amber-500 text-slate-900 shadow-lg transition-all scale-105 border-2 border-amber-500";
+            if (clickedBtn) {
+                clickedBtn.className = "filter-btn active px-6 py-2.5 rounded-full font-bold bg-amber-500 text-slate-900 shadow-lg transition-all scale-105 border-2 border-amber-500";
+            }
 
             const cards = document.querySelectorAll('.project-card');
-            cards.forEach(card => {
-                if (category === 'all' || card.getAttribute('data-category') === category) {
-                    card.style.display = 'block';
-                    void card.offsetWidth;
-                    card.classList.add('animate-fade-in'); 
-                } else {
-                    card.style.display = 'none';
-                }
-            });
+
+            // 2. منطق الفلترة الجديد
+            if (category === 'all') {
+                // في حالة "الكل": اعرض 3 فقط من كل نوع
+                let counts = {}; // عداد لكل قسم
+
+                cards.forEach(card => {
+                    let cat = card.getAttribute('data-category');
+                    
+                    // لو القسم ده لسه معملناش ليه عداد، ابدأ بـ 0
+                    if (!counts[cat]) counts[cat] = 0;
+
+                    if (counts[cat] < 3) {
+                        card.style.display = 'block';
+                        void card.offsetWidth;
+                        card.classList.add('animate-fade-in');
+                        counts[cat]++; // زود العداد واحد
+                    } else {
+                        card.style.display = 'none'; // خفي لو وصلنا لـ 3
+                    }
+                });
+
+            } else {
+                // في حالة قسم محدد: اعرض كله واخفي الباقي
+                cards.forEach(card => {
+                    if (card.getAttribute('data-category') === category) {
+                        card.style.display = 'block';
+                        void card.offsetWidth;
+                        card.classList.add('animate-fade-in'); 
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            }
         }
 
+        // تشغيل الفلتر على "الكل" أول ما الصفحة تفتح
+        window.onload = function() {
+            const allBtn = document.getElementById('btn-all');
+            filterProjects('all', allBtn);
+        };
+
+        // Secret Admin Login
         let clickCount = 0;
         const logo = document.getElementById('secretLogo');
         logo.addEventListener('click', () => {
