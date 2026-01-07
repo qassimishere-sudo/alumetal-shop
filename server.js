@@ -4,6 +4,8 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const path = require('path');
+const session = require('express-session'); // [ضيف دي]
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -20,6 +22,15 @@ const db = new Client({
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 });
+
+app.use(session({
+    secret: 'MySecretKey123', // مفتاح تشفير الجلسة (ممكن تغيره)
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // خليها true لو شغال https بس حالياً false عشان شغالين محلي أو http
+}));
+
+app.use(express.json());
 
 db.connect()
     .then(() => console.log('Connected to PostgreSQL Database'))
@@ -45,6 +56,24 @@ const upload = multer({ dest: 'uploads/' });
 
 // --- الروابط (Routes) ---
 
+function requireAuth(req, res, next) {
+    if (req.session.isAdmin) {
+        next(); // لو أدمن، عدي
+    } else {
+        res.redirect('/'); // لو مش أدمن، ارجع للرئيسية
+    }
+}
+app.post('/admin-login', (req, res) => {
+    const { password } = req.body;
+    // نفس الباسورد اللي أنت حاطه في الكود بتاعك
+    if (password === "Ammar@123") {
+        req.session.isAdmin = true; // سجل في الجلسة إنه أدمن
+        res.json({ success: true });
+    } else {
+        res.json({ success: false });
+    }
+});
+
 app.get('/', async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM projects ORDER BY id DESC");
@@ -68,7 +97,7 @@ app.get('/product/:id', async (req, res) => {
     }
 });
 
-app.get('/admin-panel', async (req, res) => {
+app.get('/admin-panel',requireAuth, async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM projects ORDER BY id DESC");
         res.render('admin', { projects: result.rows });
@@ -78,7 +107,7 @@ app.get('/admin-panel', async (req, res) => {
 });
 
 // إضافة مشروع (بدون علامة مائية)
-app.post('/add-project', upload.array('photos', 20), async (req, res) => {
+app.post('/add-project', upload.array('photos', 20),requireAuth, async (req, res) => {
     const { title, description, category } = req.body;
     const files = req.files;
 
@@ -106,7 +135,7 @@ app.post('/add-project', upload.array('photos', 20), async (req, res) => {
     }
 });
 
-app.post('/delete-project/:id', async (req, res) => {
+app.post('/delete-project/:id',requireAuth, async (req, res) => {
     try {
         await db.query("DELETE FROM projects WHERE id = $1", [req.params.id]);
         res.redirect('/admin-panel');
@@ -115,7 +144,7 @@ app.post('/delete-project/:id', async (req, res) => {
     }
 });
 
-app.get('/edit-project/:id', async (req, res) => {
+app.get('/edit-project/:id',requireAuth, async (req, res) => {
     try {
         const result = await db.query("SELECT * FROM projects WHERE id = $1", [req.params.id]);
         if (result.rows.length === 0) return res.redirect('/admin-panel');
@@ -128,7 +157,7 @@ app.get('/edit-project/:id', async (req, res) => {
 });
 
 // تحديث المشروع (بدون علامة مائية للصور الجديدة)
-app.post('/update-project/:id', upload.array('photos', 20), async (req, res) => {
+app.post('/update-project/:id', upload.array('photos', 20),requireAuth, async (req, res) => {
     const { title, description, category, deleteImages } = req.body;
     const files = req.files;
     const id = req.params.id;
