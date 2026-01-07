@@ -300,20 +300,41 @@
         };
 
         // Secret Admin Login
-        let clickCount = 0;
-        const logo = document.getElementById('secretLogo');
-        logo.addEventListener('click', () => {
-            clickCount++;
-            if (clickCount === 5) {
-                const password = prompt("أدخل كلمة المرور:");
-                if (password === "Ammar@123") {
-                    window.location.href = "/admin-panel";
+        l// Secret Admin Login
+let clickCount = 0;
+const logo = document.getElementById('secretLogo');
+
+logo.addEventListener('click', () => {
+    clickCount++;
+    if (clickCount === 5) {
+        const password = prompt("أدخل كلمة المرور:");
+        
+        if (password) {
+            // [تعديل جديد] نبعت الباسورد للسيرفر نتأكد منه
+            fetch('/admin-login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ password: password })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "/admin-panel"; // السيرفر وافق، ادخل
                 } else {
-                    alert("كلمة المرور خاطئة"); clickCount = 0; 
+                    alert("كلمة المرور خاطئة");
+                    clickCount = 0;
                 }
-            }
-            setTimeout(() => clickCount = 0, 3000);
-        });
+            })
+            .catch(err => console.error('Error:', err));
+        } else {
+            clickCount = 0;
+        }
+    }
+    // تصفير العداد بعد 3 ثواني
+    setTimeout(() => clickCount = 0, 3000);
+});
     </script>
 </body>
 </html>
