@@ -9,7 +9,11 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <style>body { font-family: 'Cairo', sans-serif; }</style>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
 <body class="bg-gray-50 pb-10">
 
@@ -29,35 +33,47 @@
                 
                 <div class="relative w-full h-[300px] md:h-[500px] rounded-xl overflow-hidden shadow-lg border border-gray-200 group bg-black flex items-center justify-center">
                     
-                    <img id="mainImg" src="<%= product.imagesList[0] %>" alt="<%= product.title %>" 
-                         class="max-w-full max-h-full object-contain transition-opacity duration-300 cursor-zoom-in z-0 relative block mx-auto">
-                    
-                    <div class="absolute inset-0 bg-black/0 transition-all group-hover:bg-black/10 pointer-events-none z-10 flex items-center justify-center opacity-0 group-hover:opacity-100">
-                         <span class="bg-slate-900/70 text-white px-4 py-2 rounded-full text-sm">
-                            <i class="fas fa-search-plus"></i> اضغط هنا للتكبير
-                         </span>
-                    </div>
-                    
-                    <button onclick="nextImage()" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-slate-900/50 text-white p-3 rounded-full hover:bg-amber-500 transition cursor-pointer z-20">
-                        <i class="fas fa-chevron-right text-xl"></i>
-                    </button>
-                    
-                    <button onclick="prevImage()" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-slate-900/50 text-white p-3 rounded-full hover:bg-amber-500 transition cursor-pointer z-20">
-                        <i class="fas fa-chevron-left text-xl"></i>
-                    </button>
+                    <% if (product.imagesList && product.imagesList.length > 0) { %>
+                        <img id="mainImg" src="<%= product.imagesList[0] %>" alt="<%= product.title %>" 
+                             class="max-w-full max-h-full object-contain transition-opacity duration-300 cursor-zoom-in z-0 relative block mx-auto">
+                        
+                        <div class="absolute inset-0 bg-black/0 transition-all group-hover:bg-black/10 pointer-events-none z-10 flex items-center justify-center opacity-0 group-hover:opacity-100">
+                             <span class="bg-slate-900/70 text-white px-4 py-2 rounded-full text-sm">
+                                <i class="fas fa-search-plus"></i> اضغط هنا للتكبير
+                             </span>
+                        </div>
+                        
+                        <% if (product.imagesList.length > 1) { %>
+                            <button onclick="nextImage()" class="absolute top-1/2 right-4 transform -translate-y-1/2 bg-slate-900/50 text-white p-3 rounded-full hover:bg-amber-500 transition cursor-pointer z-20">
+                                <i class="fas fa-chevron-right text-xl"></i>
+                            </button>
+                            
+                            <button onclick="prevImage()" class="absolute top-1/2 left-4 transform -translate-y-1/2 bg-slate-900/50 text-white p-3 rounded-full hover:bg-amber-500 transition cursor-pointer z-20">
+                                <i class="fas fa-chevron-left text-xl"></i>
+                            </button>
 
-                    <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm z-20">
-                        <span id="currentIndex">1</span> / <%= product.imagesList.length %>
-                    </div>
+                            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-3 py-1 rounded-full text-sm z-20">
+                                <span id="currentIndex">1</span> / <%= product.imagesList.length %>
+                            </div>
+                        <% } %>
+
+                    <% } else { %>
+                        <div class="text-white text-center">
+                            <i class="fas fa-image text-4xl mb-2 opacity-50"></i>
+                            <p>لا توجد صور متاحة</p>
+                        </div>
+                    <% } %>
                 </div>
                 
-                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                <% if (product.imagesList && product.imagesList.length > 1) { %>
+                <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide" id="thumbnailsContainer">
                     <% product.imagesList.forEach(function(img, index) { %>
                         <img src="<%= img %>" 
                              class="thumbnail w-20 h-20 md:w-24 md:h-24 object-cover rounded-lg cursor-pointer border-2 border-transparent hover:border-amber-500 transition-all shadow-sm flex-shrink-0 <%= index === 0 ? 'border-amber-500' : '' %>"
                              onclick="setImage(<%= index %>)">
                     <% }); %>
                 </div>
+                <% } %>
             </div>
 
             <div class="w-full lg:w-1/3">
@@ -69,8 +85,8 @@
                     <p class="text-gray-600 leading-relaxed mb-8 text-sm md:text-base"><%= product.description %></p>
                     
                     <a id="whatsappBtn" href="#" target="_blank" class="block w-full bg-green-500 hover:bg-green-600 text-white text-center font-bold py-3 md:py-4 rounded-xl transition-colors shadow-lg flex justify-center items-center gap-2">
-    <i class="fab fa-whatsapp text-xl"></i> اطلب هذا التصميم
-</a>
+                        <i class="fab fa-whatsapp text-xl"></i> اطلب هذا التصميم
+                    </a>
 
                 </div>
             </div>
@@ -78,33 +94,44 @@
     </div>
 
     <script>
+        // استلام البيانات بأمان تام من السيرفر
+        // استخدام <%- بدلاً من <%= لضمان عدم تشويه كود JSON
+        const images = <%- JSON.stringify(product.imagesList || []) %>;
+        const productTitle = <%- JSON.stringify(product.title || '') %>;
+        
         // إعدادات الزوم
         let zoom = mediumZoom('#mainImg', {
             margin: 0,
-            background: '#000000', // خلفية سوداء عند التكبير
+            background: '#000000',
             scrollOffset: 0,
         });
 
-        const images = <%- JSON.stringify(product.imagesList) %>;
         let currentIdx = 0;
 
         function updateDisplay() {
+            if (images.length === 0) return;
+
             const img = document.getElementById('mainImg');
             const counter = document.getElementById('currentIndex');
             const thumbnails = document.querySelectorAll('.thumbnail');
 
+            // تغيير الصورة
             img.src = images[currentIdx];
             
             // تحديث الزوم للصورة الجديدة
             zoom.detach();
             zoom.attach(img);
             
-            counter.innerText = currentIdx + 1;
+            // تحديث العداد
+            if (counter) counter.innerText = currentIdx + 1;
 
+            // تحديث الستايل للصور المصغرة
             thumbnails.forEach((thumb, idx) => {
                 if(idx === currentIdx) {
                     thumb.classList.add('border-amber-500');
                     thumb.classList.remove('border-transparent');
+                    // تحريك السكرول أوتوماتيك للصورة المختارة
+                    thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 } else {
                     thumb.classList.remove('border-amber-500');
                     thumb.classList.add('border-transparent');
@@ -113,12 +140,14 @@
         }
 
         function nextImage() {
+            if (images.length <= 1) return;
             currentIdx++;
             if (currentIdx >= images.length) currentIdx = 0;
             updateDisplay();
         }
 
         function prevImage() {
+            if (images.length <= 1) return;
             currentIdx--;
             if (currentIdx < 0) currentIdx = images.length - 1;
             updateDisplay();
@@ -128,27 +157,23 @@
             currentIdx = index;
             updateDisplay();
         }
-        // تحديث رابط الواتساب بالرسالة التلقائية
-function updateWhatsAppLink() {
-    const phoneNumber = "201204224500"; // رقم الواتساب الخاص بك
-    const productTitle = "<%= product.title %>"; // اسم التصميم من قاعدة البيانات
-    const currentUrl = window.location.href; // رابط الصفحة الحالية
-    
-    // نص الرسالة
-    const message = `السلام عليكم، أريد الاستفسار عن هذا التصميم: ${productTitle}\nرابط التصميم: ${currentUrl}`;
-    
-    // تحويل النص لصيغة تقبلها الروابط
-    const encodedMessage = encodeURIComponent(message);
-    
-    // إنشاء الرابط النهائي
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-    
-    // وضع الرابط في الزر
-    document.getElementById('whatsappBtn' ).href = whatsappUrl;
-}
 
-// تشغيل التحديث فور تحميل الصفحة
-window.onload = updateWhatsAppLink;
+        // تحديث رابط الواتساب (تم تحسينه ليعمل فوراً)
+        function updateWhatsAppLink() {
+            const phoneNumber = "201204224500"; 
+            const currentUrl = window.location.href; 
+            
+            const message = `السلام عليكم، أريد الاستفسار عن هذا التصميم: ${productTitle}\nرابط التصميم: ${currentUrl}`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+            
+            const btn = document.getElementById('whatsappBtn');
+            if (btn) btn.href = whatsappUrl;
+        }
+
+        // تشغيل الدالة فور تحميل السكربت (لأن العناصر موجودة قبله بالفعل)
+        updateWhatsAppLink();
 
     </script>
 </body>
