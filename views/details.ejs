@@ -94,8 +94,7 @@
     </div>
 
     <script>
-        // استلام البيانات بأمان تام من السيرفر
-        // استخدام <%- بدلاً من <%= لضمان عدم تشويه كود JSON
+        // ركز هنا: دي السطور اللي كانت بتعمل المشكلة لو الـ %> ناقصة
         const images = <%- JSON.stringify(product.imagesList || []) %>;
         const productTitle = <%- JSON.stringify(product.title || '') %>;
         
@@ -115,22 +114,17 @@
             const counter = document.getElementById('currentIndex');
             const thumbnails = document.querySelectorAll('.thumbnail');
 
-            // تغيير الصورة
             img.src = images[currentIdx];
             
-            // تحديث الزوم للصورة الجديدة
             zoom.detach();
             zoom.attach(img);
             
-            // تحديث العداد
             if (counter) counter.innerText = currentIdx + 1;
 
-            // تحديث الستايل للصور المصغرة
             thumbnails.forEach((thumb, idx) => {
                 if(idx === currentIdx) {
                     thumb.classList.add('border-amber-500');
                     thumb.classList.remove('border-transparent');
-                    // تحريك السكرول أوتوماتيك للصورة المختارة
                     thumb.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
                 } else {
                     thumb.classList.remove('border-amber-500');
@@ -158,7 +152,6 @@
             updateDisplay();
         }
 
-        // تحديث رابط الواتساب (تم تحسينه ليعمل فوراً)
         function updateWhatsAppLink() {
             const phoneNumber = "201204224500"; 
             const currentUrl = window.location.href; 
@@ -172,9 +165,7 @@
             if (btn) btn.href = whatsappUrl;
         }
 
-        // تشغيل الدالة فور تحميل السكربت (لأن العناصر موجودة قبله بالفعل)
         updateWhatsAppLink();
-
     </script>
 </body>
 </html>
