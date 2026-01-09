@@ -158,27 +158,21 @@
             updateDisplay();
         }
 
-       function updateWhatsAppLink( ) {
-    const phoneNumber = "201204224500";
-    const productTitle = `<%= product.title %>`;
-    const currentUrl = window.location.href;
-    
-    // نأخذ أول 100 حرف من الوصف ونزيل أي أسطر جديدة لضمان تنسيق الرسالة
-    const productDescription = `<%= product.description.substring(0, 100).replace(/\n/g, ' ') %>...`;
-    
-    // نص الرسالة المنسق (استخدمنا النجوم * لجعل الخط عريض في الواتساب)
-    const message = `*طلب استفسار عن تصميم* 🛠️\n\n` +
-                    `*التصميم:* ${productTitle}\n\n` +
-                    `*وصف مختصر:* ${productDescription}\n\n` +
-                    `*رابط التصميم:* ${currentUrl}\n\n` +
-                    `شكراً لكم!`;
-    
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-    
-    const btn = document.getElementById('whatsappBtn' );
-    if (btn) btn.href = whatsappUrl;
-}
+      function updateWhatsAppLink( ) {
+            const phoneNumber = "201204224500"; // رقم تليفونك زي ما هو
+            const productTitle = `<%= product.title %>`;
+            const currentUrl = window.location.href;
+
+            // ده شكل الرسالة الجديد اللي أنت طلبته
+            const message = `السلام عليكم، أريد الاستفسار عن هذا التصميم: ${productTitle}\n` +
+                            `رابط التصميم: ${currentUrl}`;
+            
+            const encodedMessage = encodeURIComponent(message);
+            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+            
+            const btn = document.getElementById('whatsappBtn' );
+            if (btn) btn.href = whatsappUrl;
+        }
 
 
         updateWhatsAppLink();
