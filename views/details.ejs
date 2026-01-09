@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= product.title %></title>
+    <!-- Open Graph Meta Tags for WhatsApp/Social Media -->
+<meta property="og:title" content="<%= product.title %>">
+<meta property="og:description" content="<%= product.description.substring(0, 150) %>...">
+<meta property="og:image" content="<%= product.imagesList[0] %>">
+<meta property="og:url" content="https://elhandaseya-gallery.onrender.com/product/<%= product.id %>">
+<meta property="og:type" content="website">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/medium-zoom/dist/medium-zoom.min.js"></script>
     
@@ -152,18 +159,28 @@
             updateDisplay();
         }
 
-        function updateWhatsAppLink() {
-            const phoneNumber = "201204224500"; 
-            const currentUrl = window.location.href; 
-            
-            const message = `السلام عليكم، أريد الاستفسار عن هذا التصميم: ${productTitle}\nرابط التصميم: ${currentUrl}`;
-            
-            const encodedMessage = encodeURIComponent(message);
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
-            
-            const btn = document.getElementById('whatsappBtn');
-            if (btn) btn.href = whatsappUrl;
-        }
+       function updateWhatsAppLink( ) {
+    const phoneNumber = "201204224500";
+    const productTitle = `<%= product.title %>`;
+    const currentUrl = window.location.href;
+    
+    // نأخذ أول 100 حرف من الوصف ونزيل أي أسطر جديدة لضمان تنسيق الرسالة
+    const productDescription = `<%= product.description.substring(0, 100).replace(/\n/g, ' ') %>...`;
+    
+    // نص الرسالة المنسق (استخدمنا النجوم * لجعل الخط عريض في الواتساب)
+    const message = `*طلب استفسار عن تصميم* 🛠️\n\n` +
+                    `*التصميم:* ${productTitle}\n\n` +
+                    `*وصف مختصر:* ${productDescription}\n\n` +
+                    `*رابط التصميم:* ${currentUrl}\n\n` +
+                    `شكراً لكم!`;
+    
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodedMessage}`;
+    
+    const btn = document.getElementById('whatsappBtn' );
+    if (btn) btn.href = whatsappUrl;
+}
+
 
         updateWhatsAppLink();
     </script>
