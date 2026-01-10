@@ -2,6 +2,13 @@ const express = require('express');
 const { Client } = require('pg');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// حط المفتاح اللي جبته من موقع جوجل هنا
+const genAI = new GoogleGenerativeAI("AIzaSyB81WaedbRQg3-Ytb1RF2l4ncWh3fgGwNs");
+
+// بنختار موديل سريع وذكي ومجاني
+const model = genAI.getModel({ model: "gemini-1.5-flash" });
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
@@ -54,6 +61,37 @@ app.use(express.urlencoded({ extended: true }));
 const upload = multer({ dest: 'uploads/' });
 
 // --- الروابط (Routes) ---
+// --- مسار الشات باستخدام Gemini ---
+app.post('/api/chat', async (req, res) => {
+    const { message } = req.body;
+    
+    try {
+        // تعليمات المدير (System Prompt)
+        // بنقول لـ Gemini يتصرف ازاي قبل ما يجاوب
+        const prompt = `
+            أنت مساعد ذكي لشركة "الهندسية ميتال".
+            اسم المدير: م/ محسن فاروق.
+            تخصصنا: مطابخ ألوميتال، شبابيك (PS وجامبو)، أبواب، وواجهات.
+            رقم التواصل: 01066603323.
+            العنوان: اسأل العميل عن مكانه الأول.
+            التعليمات:
+            1. تكلم باللهجة المصرية الودودة.
+            2. لو حد سأل عن سعر، قوله "الأسعار بتختلف حسب المقاس والمواصفات، يا ريت تكلمنا أو تسيب رقمك للمعاينة".
+            3. هدفك انك تقنع العميل يطلب معاينة.
+            
+            سؤال العميل: ${message}
+        `;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        res.json({ reply: text });
+    } catch (error) {
+        console.error("Gemini Error:", error);
+        res.status(500).json({ reply: "معلش السيستم فيه تحديث، ممكن تكلمنا واتساب؟ 01066603323" });
+    }
+});
 
 function requireAuth(req, res, next) {
     if (req.session.isAdmin) {

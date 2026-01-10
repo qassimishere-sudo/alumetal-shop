@@ -336,5 +336,77 @@ logo.addEventListener('click', () => {
     setTimeout(() => clickCount = 0, 3000);
 });
     </script>
+    <button onclick="toggleChat()" class="fixed bottom-24 left-4 z-50 bg-slate-900 text-amber-500 p-4 rounded-full shadow-lg hover:scale-110 transition-transform border-2 border-amber-500 z-[9999]">
+        <i class="fas fa-robot text-2xl"></i>
+    </button>
+
+    <div id="aiChatBox" class="fixed bottom-40 left-4 z-[9999] w-80 bg-white rounded-2xl shadow-2xl border border-gray-200 hidden flex flex-col overflow-hidden" style="height: 450px;">
+        <div class="bg-slate-900 p-4 flex justify-between items-center border-b border-amber-500">
+            <h3 class="text-white font-bold flex items-center gap-2"><i class="fas fa-robot text-amber-500"></i> مساعد الهندسية</h3>
+            <button onclick="toggleChat()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+        
+        <div id="chatMessages" class="flex-1 p-4 overflow-y-auto bg-slate-50 space-y-3">
+            <div class="flex justify-start">
+                <div class="bg-amber-100 text-slate-900 p-3 rounded-lg rounded-tl-none max-w-[85%] text-sm">
+                    أهلاً يا فندم في الهندسية ميتال ❤️<br>أؤمرني، محتاج تستفسر عن مطابخ ولا شبابيك؟
+                </div>
+            </div>
+        </div>
+
+        <div class="p-3 bg-white border-t border-gray-100 flex gap-2">
+            <input type="text" id="userMsg" placeholder="اكتب سؤالك..." class="flex-1 px-4 py-2 bg-gray-100 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500">
+            <button onclick="sendMessage()" class="bg-slate-900 text-amber-500 w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-800 transition-colors">
+                <i class="fas fa-paper-plane text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function toggleChat() {
+            document.getElementById('aiChatBox').classList.toggle('hidden');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userMsg');
+            const msg = input.value.trim();
+            const messagesDiv = document.getElementById('chatMessages');
+
+            if (!msg) return;
+
+            // رسالة اليوزر
+            messagesDiv.innerHTML += `<div class="flex justify-end"><div class="bg-slate-900 text-white p-3 rounded-lg rounded-tr-none max-w-[85%] text-sm">${msg}</div></div>`;
+            input.value = '';
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            // مؤشر التحميل
+            const loadingId = 'loading-' + Date.now();
+            messagesDiv.innerHTML += `<div id="${loadingId}" class="flex justify-start"><div class="bg-gray-200 text-gray-500 p-3 rounded-lg rounded-tl-none text-xs">جاري الكتابة...</div></div>`;
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+            try {
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: msg })
+                });
+                const data = await response.json();
+                
+                document.getElementById(loadingId).remove();
+                
+                // رد Gemini
+                // تحويل الرموز ** لنص عريض (تنسيق بسيط)
+                let cleanReply = data.reply.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+                
+                messagesDiv.innerHTML += `<div class="flex justify-start"><div class="bg-amber-100 text-slate-900 p-3 rounded-lg rounded-tl-none max-w-[85%] text-sm leading-relaxed">${cleanReply}</div></div>`;
+            } catch (err) {
+                document.getElementById(loadingId).remove();
+                messagesDiv.innerHTML += `<div class="text-red-500 text-xs">حصل خطأ بسيط، حاول تاني.</div>`;
+            }
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        document.getElementById('userMsg').addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
 </body>
 </html>
