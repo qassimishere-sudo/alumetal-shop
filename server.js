@@ -8,7 +8,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI("AIzaSyB81WaedbRQg3-Ytb1RF2l4ncWh3fgGwNs");
 
 // بنختار موديل سريع وذكي ومجاني
-const model = genAI.getModel({ model: "gemini-1.5-flash" });
+const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // ✅ ده الصح
 const fs = require('fs');
 const path = require('path');
 const session = require('express-session');
