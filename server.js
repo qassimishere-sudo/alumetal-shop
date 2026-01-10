@@ -5,7 +5,7 @@ const cloudinary = require('cloudinary').v2;
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 // حط المفتاح اللي جبته من موقع جوجل هنا
-const genAI = new GoogleGenerativeAI("AIzaSyB81WaedbRQg3-Ytb1RF2l4ncWh3fgGwNs");
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // بنختار موديل سريع وذكي ومجاني
 const model = genAI.getGenerativeModel({ model: "gemma-3-27b-it" }); // ✅ ده الصح
