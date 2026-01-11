@@ -427,6 +427,16 @@ logo.addEventListener('click', () => {
                     
                     const project = allProjectsData.find(p => p.id == projectId);
                  if (project) {
+                    const pluralNames = {
+                        "مطبخ": "المطابخ",
+                        "شباك": "الشبابيك",
+                        "باب": "الأبواب",
+                        "تنده": "التندات",
+                        "واجهة": "الواجهات"
+                    };
+                    
+                    // السطر ده بيظبط الاسم (لو ملقاش الاسم بيزود "ات")
+                    const displayCategory = pluralNames[project.category] || (project.category + "ات");
                         // تصميم الكارت (تم إضافة زرار عرض الكل)
                         cardHtml = `
                             <div class="mt-3 bg-white rounded-xl overflow-hidden shadow-lg border border-gray-200 transform hover:scale-105 transition-transform duration-300 w-64">
