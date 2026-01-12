@@ -135,9 +135,24 @@ app.post('/admin-login', (req, res) => {
     }
 });
 
+// الصفحة الرئيسية (نسخة الفلترة الذكية)
 app.get('/', async (req, res) => {
     try {
-        const result = await db.query("SELECT * FROM projects ORDER BY id DESC");
+        const categoryFilter = req.query.category; // هنا بنشوف لو الرابط فيه كلمة "category"
+        
+        let query = 'SELECT * FROM projects';
+        let params = [];
+
+        // لو داس على زرار عرض الكل (يعني باعت نوع معين)
+        if (categoryFilter) {
+            query += ' WHERE category = $1'; // هات النوع ده بس
+            params.push(categoryFilter);
+        }
+
+        query += ' ORDER BY id DESC'; // رتبهم بالأحدث
+
+        const result = await db.query(query, params);
+        
         res.render('index', { projects: result.rows });
     } catch (err) {
         console.error(err);
